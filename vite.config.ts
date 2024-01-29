@@ -10,5 +10,5 @@ export default defineConfig({
       components: '/src/components',
     },
   },
-  base: '/Kanban',
+  base: '/kanban-board',
 })
