@@ -12,9 +12,6 @@ dist
 dist-ssr
 *.local
 
-# token and axios header
-axios.ts
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
