@@ -1,19 +1,22 @@
 import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
+import { Layout } from 'antd';
 import { fetchIssues } from './redux/issues/operations';
-import { AppDispatch } from './redux/store';
 import NavBar from "./components/NavBar/NavBar";
 import BreadCrumbs from "./components/NavBar/BreadCrumbs";
 import Form from "./components/Form/Form";
 import KanbanBoard from './components/KanbanBoard/KanbanBoard';
-import { Layout } from 'antd';
+import { AppDispatch, RootState, useAppDispatch } from './redux/store';
 
-function App() {
-  const dispatch = useDispatch<AppDispatch>();
+const App = (): JSX.Element => {
+  const dispatch: AppDispatch = useAppDispatch();
+  const searchValue = useSelector((state: RootState) => state.issues.search)
 
   useEffect(() => {
-    dispatch(fetchIssues());
-  }, [dispatch]);
+    if (!searchValue) return;
+    
+    dispatch(fetchIssues(searchValue));
+  }, [dispatch, searchValue]);
 
   return (
     <Layout>

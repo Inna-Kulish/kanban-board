@@ -1,13 +1,14 @@
 import { Card } from "antd";
-import { Task } from "../../shared/types";
+import { IssueType } from "../../shared/types";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 interface Props {
-  task: Task;
+  issue: IssueType;
 }
 
-const TaskCard = ({ task }: Props) => {
+const IssueCard = ({ issue }: Props) => {
+
   const {
     setNodeRef,
     attributes,
@@ -16,10 +17,10 @@ const TaskCard = ({ task }: Props) => {
     transition,
     isDragging,
   } = useSortable({
-    id: task.id,
+    id: issue.id,
     data: {
-      type: "Task",
-      task,
+      type: "Issue",
+      issue,
     },
   });
     
@@ -33,8 +34,8 @@ const TaskCard = ({ task }: Props) => {
     }
 
     return (
-        <Card {...attributes} {...listeners} ref={setNodeRef} style={{ ...style, height: 100, overflow: 'hidden' }}>{task.content}</Card>
+        <Card {...attributes} {...listeners} ref={setNodeRef} style={{ ...style, height: 100, marginBottom: 10, overflow: 'hidden' }}>{issue.title}</Card>
     )
 };
 
-export default TaskCard;
+export default IssueCard;

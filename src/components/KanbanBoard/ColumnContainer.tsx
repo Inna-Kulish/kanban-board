@@ -1,19 +1,20 @@
 import { Card } from "antd";
-import { Column, Task } from "../../shared/types";
+import { Column, IssueType } from "../../shared/types";
 import { CSS } from "@dnd-kit/utilities";
 import { SortableContext, useSortable } from "@dnd-kit/sortable";
-import TaskCard from "./TaskCard";
+import IssueCard from "./IssueCard";
 import { useMemo } from "react";
 
 interface Props {
   column: Column;
-  tasks: Task[];
+  issues: IssueType[];
 }
 
-const ColumnContainer = ({ column, tasks }: Props) => {
-  const tasksIds = useMemo(() => {
-    return tasks.map((task) => task.id);
-  }, [tasks]);
+const ColumnContainer = ({ column, issues }: Props) => {
+
+  const issuesIds = useMemo(() => {
+    return issues.map((issue) => issue.id);
+  }, [issues]);
 
   const {
     setNodeRef,
@@ -39,27 +40,31 @@ const ColumnContainer = ({ column, tasks }: Props) => {
     return (
       <Card
         ref={setNodeRef}
-        style={{ ...style }}
-        bodyStyle={{ width: 200, height: "100vh", textAlign: "center", backgroundColor:'red'}}
+        style={{ ...style, overflow: 'scroll' }}
+        bodyStyle={{
+          width: 400,
+          height: "100%",
+          textAlign: "center",
+          backgroundColor: "red",
+        }}
       ></Card>
     );
   }
 
-    return (
-            <Card
-                ref={setNodeRef} style={style} {...attributes}
+  return (
+    <Card
+      ref={setNodeRef}
+      style={{ ...style, overflow: 'scroll', textAlign: "center", width: 400, height: '100%' }}
+      {...attributes}
       {...listeners}
       title={column.title}
-      bodyStyle={{ width: 200, height: '', textAlign: "center" }}
-      >
-         
-      <SortableContext items={tasksIds}>
-        {tasks.map((task) => (
-          <TaskCard key={task.id} task={task}></TaskCard>
-        ))}
-          </SortableContext>
-          
-            </Card>
+    >
+        <SortableContext items={issuesIds}>
+          {issues.map((issue) => (
+            <IssueCard key={issue.id} issue={issue}></IssueCard>
+          ))}
+        </SortableContext>
+    </Card>
   );
 };
 

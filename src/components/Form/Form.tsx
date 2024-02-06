@@ -1,9 +1,15 @@
-import { Input,} from 'antd';
+import { Input, } from 'antd';
+import { changeSearch } from '../../redux/issues/issuesSlice';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '../../redux/store';
+
 const { Search } = Input;
 
 const Form = () => {
-    const onSearch = () => {
-console.log('a')
+    const dispatch = useDispatch<AppDispatch>();
+    
+    const onSearch = (value: string) => {
+dispatch(changeSearch(value))
     }
 
     return (
