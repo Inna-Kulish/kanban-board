@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Column, IssueType } from "../../shared/types";
 import { Flex } from "antd";
 import { boxStyle } from "./BoardStyle";
@@ -40,8 +40,6 @@ const KanbanBoard = () => {
   const [activeColumn, setActiveColumn] = useState<Column | null>(null);
   const [activeIssue, setActiveIssue] = useState<IssueType | null>(null);
 
-  const isLoading = useSelector((state: RootState) => state.issues.isLoading);
-  const error = useSelector((state: RootState) => state.issues.error);
   const issues = useSelector((state: RootState) => state.issues.items);
   const dispatch: AppDispatch = useAppDispatch();
 
