@@ -15,14 +15,20 @@ export interface IssueType {
   comments: number;
 }
 
-export type IssuesState = {
-    isLoading: boolean;
-    search: string;
-    items: IssueType[];
-    error: string | null;
+export interface RepoChangesType {
+  [key: string]: IssueType[];
 }
 
-export type GitHubIssue = {
+export interface IssuesState {
+    isLoading: boolean;
+  search: string;
+  repoChanges: RepoChangesType[];
+  items: IssueType[];
+  stars: number;
+  error: string | null;
+}
+
+export interface GitHubIssue {
   id: number;
   state: string;
   title: string;
@@ -33,4 +39,9 @@ export type GitHubIssue = {
   };
   created_at: string;
   comments: number;
+  stargazers_count: number;
+}
+
+export interface GitHubRepo {
+  stargazers_count: number;
 }

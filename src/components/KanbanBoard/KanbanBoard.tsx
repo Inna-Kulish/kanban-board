@@ -9,12 +9,16 @@ import {
   DragOverEvent,
   DragOverlay,
   DragStartEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
 } from "@dnd-kit/core";
 import { SortableContext, arrayMove } from "@dnd-kit/sortable";
 import { createPortal } from "react-dom";
 import IssueCard from "./IssueCard";
 import { useSelector } from "react-redux";
-import { RootState } from "../../redux/store";
+import { AppDispatch, RootState, useAppDispatch } from "../../redux/store";
+import { changeIssues } from "../../redux/issues/issuesSlice";
 
 const defaultCols: Column[] = [
   {
@@ -38,17 +42,13 @@ const KanbanBoard = () => {
 
   const isLoading = useSelector((state: RootState) => state.issues.isLoading);
   const error = useSelector((state: RootState) => state.issues.error);
-  const defaultIssues = useSelector((state: RootState) => state.issues.items);
-  const [issues, setIssues] = useState<IssueType[]>([]);
+  const issues = useSelector((state: RootState) => state.issues.items);
+  const dispatch: AppDispatch = useAppDispatch();
 
   const columnsId = useMemo(
     () => columns.map((column) => column.id),
     [columns]
   );
-
-  useEffect(() => {
-    setIssues(defaultIssues);
-  }, [defaultIssues]);
 
   const onDragStart = (e: DragStartEvent) => {
     if (e.active.data.current?.type === "Column") {
@@ -63,6 +63,9 @@ const KanbanBoard = () => {
   };
 
   const onDragEnd = (e: DragEndEvent) => {
+    setActiveColumn(null);
+    setActiveIssue(null);
+
     const { active, over } = e;
     if (!over) return;
 
@@ -70,6 +73,10 @@ const KanbanBoard = () => {
     const overColumnId = over.id;
 
     if (activeColumnId === overColumnId) return;
+
+    const isActiveAColumn = active.data.current?.type === "Column";
+    
+    if (!isActiveAColumn) return;
 
     setColumns((columns) => {
       const activeColumnIndex = columns.findIndex(
@@ -97,54 +104,64 @@ const KanbanBoard = () => {
 
     if (!isActiveIssue) return;
 
+    // Dropping an Issue over another Issue
     if (isActiveIssue && isOverIssue) {
-      const activeIndex = issues.findIndex((item) => item.id === activeId);
-      const overIndex = issues.findIndex((item) => item.id === overId);
+      const activeIndex = issues.findIndex((item: IssueType) => item.id === activeId);
+      const overIndex = issues.findIndex((item: IssueType) => item.id === overId);
 
       if (issues[activeIndex].columnId !== issues[overIndex].columnId) {
-        const moveArr = issues.filter((item) => item.id !== activeId);
+        const moveArr = issues.filter((item: IssueType) => item.id !== activeId);
         const moveObj = { ...issues[activeIndex] };
         moveObj.columnId = issues[overIndex].columnId;
         moveArr.push(moveObj);
 
-        setIssues(arrayMove(moveArr, activeIndex, overIndex - 1));
+        dispatch(changeIssues(arrayMove(moveArr, activeIndex, overIndex - 1)));
       }
-      setIssues(arrayMove(issues, activeIndex, overIndex));
+      dispatch(changeIssues(arrayMove(issues, activeIndex, overIndex)));
     }
 
     const isOverColumn = over.data.current?.type === "Column";
 
+    // Dropping an Issue over a column
     if (isActiveIssue && isOverColumn) {
-      const activeIndex = issues.findIndex((item) => item.id === activeId);
-      const moveArr = issues.filter((item) => item.id !== activeId);
+      const activeIndex = issues.findIndex((item: IssueType) => item.id === activeId);
+      const moveArr = issues.filter((item: IssueType) => item.id !== activeId);
       const moveObj = { ...issues[activeIndex] };
       moveObj.columnId = overId;
       moveArr.push(moveObj);
 
-      setIssues(arrayMove(moveArr, activeIndex, activeIndex));
+      dispatch(changeIssues(arrayMove(moveArr, activeIndex, activeIndex)))
     }
   };
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 10,
+      },
+    })
+  );
+
   return (
-    <DndContext
+    <Flex style={{minHeight: '100vh', width: '100%', overflowX: 'auto', overflowY: 'hidden',}}>
+      <DndContext
+        sensors={sensors}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       onDragOver={onDragOver}
     >
       <Flex style={boxStyle} gap={50}>
-        {isLoading && !error ? (
-          <b>Request in progress...</b>
-        ) : (
+        
           <SortableContext items={columnsId}>
             {columns.map((column) => (
               <ColumnContainer
                 key={column.id}
                 column={column}
-                issues={issues.filter((issue) => issue.columnId === column.id)}
+                issues={issues.filter((issue: IssueType) => issue.columnId === column.id)}
               />
             ))}
           </SortableContext>
-        )}
+     
       </Flex>
       {createPortal(
         <DragOverlay>
@@ -152,7 +169,7 @@ const KanbanBoard = () => {
             <ColumnContainer
               column={activeColumn}
               issues={issues.filter(
-                (issue) => issue.columnId === activeColumn.id
+                (issue: IssueType) => issue.columnId === activeColumn.id
               )}
             />
           )}
@@ -160,7 +177,8 @@ const KanbanBoard = () => {
         </DragOverlay>,
         document.body
       )}
-    </DndContext>
+      </DndContext>
+      </Flex>
   );
 };
 

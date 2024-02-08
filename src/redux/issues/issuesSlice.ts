@@ -1,46 +1,67 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { fetchIssues } from "./operations";
-import { GitHubIssue, IssuesState } from "../../shared/types";
+import { AnyAction, createSlice, isAnyOf, PayloadAction,  } from "@reduxjs/toolkit";
+import { persistReducer } from "redux-persist";
+import storage from "redux-persist/lib/storage";
+import { fetchIssues, fetchStars } from "./operations";
+import { GitHubIssue, GitHubRepo, IssuesState, IssueType } from "../../shared/types";
 
 const initialState: IssuesState = {
   search: "",
   items: [],
+  repoChanges: [],
+  stars: 0,
   isLoading: false,
   error: null,
 };
 
 const handlePending = (state: IssuesState) => {
   state.isLoading = true;
+  state.error = null;
 };
 
-// const handleRejected = (state: IssuesState, action: PayloadAction<{message: string}>) => {
-//   state.isLoading = false;
-//   state.error = action.payload.message || 'Something went wrong';
-// };
+const handleRejected = (
+  state: IssuesState,
+  action: PayloadAction<string>
+) => {
+  state.isLoading = false;
+  state.error = action.payload;
+};
 
 const handleFulfilledFetch = (
   state: IssuesState,
-  {payload}: PayloadAction<GitHubIssue[]>
+  { payload }: PayloadAction<GitHubIssue[]>
 ) => {
-  const dataArr = payload.map(({id, state, title, assignee, number, user, created_at, comments}) => {
-        const obj = {
-          id: id,
-          columnId: state,
-          title: title,
-          number: number,
-          name: user.login,
-          createdData: created_at,
-          comments: comments,
-        };
+  const dataArr = payload.map(
+    ({ id, state, title, assignee, number, user, created_at, comments }) => {
+      const obj = {
+        id: id,
+        columnId: state,
+        title: title,
+        number: number,
+        name: user.login,
+        createdData: created_at,
+        comments: comments,
+      };
 
-        if (state === 'open' && assignee) obj.columnId = "assignee";
+      if (state === "open" && assignee) obj.columnId = "assignee";
 
-        return {...obj};
-  });
-  
- return {...state, items: dataArr, isLoading: false, error: null};
-  
+      return { ...obj };
+    }
+  );
+
+  state.isLoading = false;
+  state.error = null;
+  state.items = dataArr;
+  state.repoChanges.push({ [state.search]: dataArr });
 };
+
+const handleFulfilledFetchStars = (state: IssuesState,
+  { payload }: PayloadAction<GitHubRepo>) => {
+  state.stars = payload.stargazers_count;
+  }
+
+function isError(action: AnyAction) {
+  return action.type.endsWith('rejected');
+}
 
 const issuesSlice = createSlice({
   name: "issues",
@@ -49,14 +70,36 @@ const issuesSlice = createSlice({
     changeSearch: (state: IssuesState, action: PayloadAction<string>) => {
       state.search = action.payload;
     },
+    changeIssues: (state: IssuesState, action: PayloadAction<IssueType[]>) => {
+      state.error = null;
+      state.items = action.payload;
+      state.repoChanges.map(item => {
+        if (Object.keys(item).includes(state.search)) {
+          item[state.search] = action.payload;
+        }
+      });
+    },
   },
 
   extraReducers: (builder) => {
     builder
+      .addCase(fetchStars.fulfilled, handleFulfilledFetchStars)
       .addCase(fetchIssues.fulfilled, handleFulfilledFetch)
-      .addCase(fetchIssues.pending, handlePending)
+      .addMatcher(isAnyOf(fetchIssues.pending, fetchStars.pending), handlePending)
+      .addMatcher(isError, handleRejected)
   },
 });
 
-export const { changeSearch } = issuesSlice.actions;
+const persistConfig = {
+  key: "issues",
+  storage,
+  whitelist: ['repoChanges', 'search'],
+};
+
+export const persistedIssuesReducer = persistReducer(
+  persistConfig,
+  issuesSlice.reducer
+);
+
+export const { changeSearch, changeIssues } = issuesSlice.actions;
 export const issuesReducer = issuesSlice.reducer;

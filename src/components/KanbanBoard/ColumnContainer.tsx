@@ -1,4 +1,4 @@
-import { Card } from "antd";
+import { Divider, Flex } from "antd";
 import { Column, IssueType } from "../../shared/types";
 import { CSS } from "@dnd-kit/utilities";
 import { SortableContext, useSortable } from "@dnd-kit/sortable";
@@ -38,33 +38,31 @@ const ColumnContainer = ({ column, issues }: Props) => {
 
   if (isDragging) {
     return (
-      <Card
+      <Flex
         ref={setNodeRef}
-        style={{ ...style, overflow: 'scroll' }}
-        bodyStyle={{
-          width: 400,
-          height: "100%",
-          textAlign: "center",
-          backgroundColor: "red",
-        }}
-      ></Card>
+        style={{ ...style, display: 'flex', width: 450, height: 500, maxHeight: 500, }} children={undefined}></Flex>
     );
   }
 
   return (
-    <Card
+    <Flex
       ref={setNodeRef}
-      style={{ ...style, overflow: 'scroll', textAlign: "center", width: 400, height: '100%' }}
-      {...attributes}
-      {...listeners}
-      title={column.title}
+      style={{...style, display: 'flex', flexDirection: 'column', width: 450, height: 500, maxHeight: 500, padding: 16, overflowX: 'hidden', overflowY: 'auto', backgroundColor: 'white', borderRadius: 6}}
     >
+      <Divider {...attributes}
+      {...listeners} orientation="left" plain style={{fontSize: 20, fontWeight: 600, cursor: 'grab'}}>
+      {column.title }
+    </Divider>
+      <Flex
+      style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, gap: 16,  overflowX: 'hidden', overflowY: 'auto' }}>
         <SortableContext items={issuesIds}>
           {issues.map((issue) => (
-            <IssueCard key={issue.id} issue={issue}></IssueCard>
+            <IssueCard key={issue.id} issue={issue}/>
           ))}
         </SortableContext>
-    </Card>
+        </Flex>
+        
+    </Flex>
   );
 };
 
