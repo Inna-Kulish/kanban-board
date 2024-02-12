@@ -93,7 +93,7 @@ const issuesSlice = createSlice({
 const persistConfig = {
   key: "issues",
   storage,
-  whitelist: ['repoChanges', 'search'],
+  whitelist: ['repoChanges', 'search', 'stars'],
 };
 
 export const persistedIssuesReducer = persistReducer(

@@ -18,7 +18,6 @@ const App = (): JSX.Element => {
   const error = useSelector((state: RootState) => state.issues.error);
 
   useEffect(() => {
-    dispatch(fetchStars(searchValue))
     if (!searchValue) return;
 
   const matchingItem = repoChanges.find(item => Object.keys(item).includes(searchValue));
@@ -29,7 +28,7 @@ const App = (): JSX.Element => {
   } else {
     dispatch(fetchIssues(searchValue));
     } 
-  
+  dispatch(fetchStars(searchValue))
   }, [dispatch, repoChanges, searchValue]);
 
   useEffect(() => {

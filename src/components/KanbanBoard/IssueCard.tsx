@@ -42,11 +42,11 @@ const IssueCard = ({ issue }: Props) => {
     };
     
     if (isDragging) {
-        return <Flex ref={setNodeRef} style={{ ...style, display: 'flex', minHeight: 100, padding: 8, opacity: 30, borderRadius: 12, borderWidth: 2, borderColor: 'red', backgroundColor: 'green', cursor: 'grab', position: 'relative' }} children={undefined}></Flex>;
+        return <Flex ref={setNodeRef} style={{ ...style, display: 'flex', minHeight: 150, padding: 8, opacity: 0.3, borderRadius: 12, border: '2px solid red', backgroundColor: 'gray', cursor: 'grab', position: 'relative' }} children={undefined}></Flex>;
     }
 
     return (
-      <Flex ref={setNodeRef} {...attributes} {...listeners} style={{ ...style, flexDirection: 'column', minHeight: 100, justifyContent: 'space-around', padding: 8, borderRadius: 12, border: '1px solid black', cursor: 'grab'}}>
+      <Flex ref={setNodeRef} {...attributes} {...listeners} style={{ ...style, flexDirection: 'column', minHeight: 150, justifyContent: 'space-around', padding: 8, borderRadius: 12, border: '1px solid black', backgroundColor: 'white', cursor: 'grab'}}>
         <Text strong>{issue.title}</Text>
         <Text type="secondary">#{issue.number} opened {getDaysDifferenceFromDate("2024-02-08T01:33:25Z")} days ago</Text>
         <Text type="secondary">{issue.name} <Divider type="vertical" /> Comments: {issue.comments}</Text>
